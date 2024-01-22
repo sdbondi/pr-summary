@@ -137,6 +137,7 @@ async fn main() -> anyhow::Result<()> {
 fn to_better_state(state: &MergeableState) -> String {
     match state {
         MergeableState::Dirty => "Conflicts".to_string(),
+        MergeableState::Blocked | MergeableState::Unknown => "No".to_string(),
         s => format!("{:?}", s),
     }
 }
