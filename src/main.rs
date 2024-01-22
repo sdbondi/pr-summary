@@ -13,11 +13,21 @@ async fn main() -> anyhow::Result<()> {
         .personal_token(cli.personal_token.clone())
         .build()?;
     octocrab::initialise(github);
-    let prs = octocrab::instance()
-        .pulls(&cli.owner, &cli.repo)
-        .list()
-        .send()
-        .await?;
+    let prs = if let Some(pr) = cli.pr {
+        let pr = octocrab::instance()
+            .pulls(&cli.owner, &cli.repo)
+            .get(pr)
+            .await?;
+
+        vec![pr]
+    } else {
+        let prs = octocrab::instance()
+            .pulls(&cli.owner, &cli.repo)
+            .list()
+            .send()
+            .await?;
+        prs.items
+    };
 
     let mut md = MarkdownTable::new();
     md.set_titles(vec!["PR", "Author", "Mergeable", "Review state"]);
@@ -27,7 +37,7 @@ async fn main() -> anyhow::Result<()> {
             continue;
         }
 
-        let age = (chrono::Utc::now() - pr.created_at.unwrap())
+        let age = (chrono::Utc::now() - pr.updated_at.unwrap())
             .to_std()
             .unwrap();
         if age > std::time::Duration::from_secs(60 * 60 * 24 * 60) {
@@ -39,27 +49,24 @@ async fn main() -> anyhow::Result<()> {
             .await?;
         let last_commit = commits.as_array().unwrap().last().unwrap();
 
+        let check_suites_url = format!(
+            "https://api.github.com/repos/tari-project/tari-dan/commits/{}/check-suites",
+            last_commit["sha"].as_str().unwrap()
+        );
         let check_suites: serde_json::Value = octocrab::instance()
-            .get(
-                format!(
-                    "https://api.github.com/repos/tari-project/tari-dan/commits/{}/check-suites",
-                    last_commit["sha"].as_str().unwrap()
-                ),
-                None::<&()>,
-            )
+            .get(&check_suites_url, None::<&()>)
             .await?;
 
+        let check_runs_url = format!(
+            "https://api.github.com/repos/{}/{}/commits/{}/check-runs",
+            cli.owner,
+            cli.repo,
+            last_commit["sha"].as_str().unwrap()
+        );
         let check_runs = octocrab::instance()
-            .get::<serde_json::Value, _, _>(
-                &format!(
-                    "https://api.github.com/repos/{}/{}/commits/{}/check-runs",
-                    cli.owner,
-                    cli.repo,
-                    last_commit["sha"].as_str().unwrap()
-                ),
-                None::<&()>,
-            )
+            .get::<serde_json::Value, _, _>(&check_runs_url, None::<&()>)
             .await?;
+
         let tests_passed = check_suites["check_suites"]
             .as_array()
             .unwrap()

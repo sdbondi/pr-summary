@@ -15,6 +15,10 @@ pub struct Cli {
         hide_default_value = true
     )]
     pub personal_token: String,
+
+    /// Load a specific PR. Mostly used for development purposes
+    #[clap(long)]
+    pub pr: Option<u64>,
 }
 
 impl Cli {
