@@ -70,6 +70,17 @@ async fn main() -> anyhow::Result<()> {
                 .unwrap()
                 .iter()
                 .all(|s| s["conclusion"] == "success");
+        let tests_pending = !tests_passed
+            && check_suites["check_suites"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|s| s["status"] != "completed")
+            && check_runs["check_runs"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|s| s["status"] != "completed");
 
         let reviews = octocrab::instance()
             .pulls(&cli.owner, &cli.repo)
@@ -119,7 +130,13 @@ async fn main() -> anyhow::Result<()> {
                 "[#{}]({}) {}",
                 pr.number,
                 pr.html_url.unwrap(),
-                if tests_passed { "🟢" } else { "🔴" },
+                if tests_passed {
+                    "🟢"
+                } else if tests_pending {
+                    "🟡"
+                } else {
+                    "🔴"
+                },
             ),
             pr.user.map(|u| u.login).unwrap_or_default(),
             pr.mergeable_state

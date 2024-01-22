@@ -1,4 +1,4 @@
-Simple tool to generate a markdown table that summarizes the status (conflicts, CI, review state) of PRs 
+A quick-and-dirty tool to generate a markdown table that summarizes the status (conflicts, CI, review state) of PRs 
 
 PR                                                             | Author          | Mergeable | Review state        
 -------------------------------------------------------------- | --------------- | --------- | ------------------- 
