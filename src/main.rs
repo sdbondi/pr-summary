@@ -49,13 +49,13 @@ async fn main() -> anyhow::Result<()> {
             .await?;
         let last_commit = commits.as_array().unwrap().last().unwrap();
 
-        let check_suites_url = format!(
-            "https://api.github.com/repos/tari-project/tari-dan/commits/{}/check-suites",
-            last_commit["sha"].as_str().unwrap()
-        );
-        let check_suites: serde_json::Value = octocrab::instance()
-            .get(&check_suites_url, None::<&()>)
-            .await?;
+        // let check_suites_url = format!(
+        //     "https://api.github.com/repos/tari-project/tari-dan/commits/{}/check-suites",
+        //     last_commit["sha"].as_str().unwrap()
+        // );
+        // let check_suites: serde_json::Value = octocrab::instance()
+        //     .get(&check_suites_url, None::<&()>)
+        //     .await?;
 
         let check_runs_url = format!(
             "https://api.github.com/repos/{}/{}/commits/{}/check-runs",
@@ -67,22 +67,17 @@ async fn main() -> anyhow::Result<()> {
             .get::<serde_json::Value, _, _>(&check_runs_url, None::<&()>)
             .await?;
 
-        let tests_passed = check_suites["check_suites"]
+        let tests_passed = check_runs["check_runs"]
             .as_array()
             .unwrap()
             .iter()
-            .all(|s| s["conclusion"] == "success")
-            && check_runs["check_runs"]
-                .as_array()
-                .unwrap()
-                .iter()
-                .all(|s| s["conclusion"] == "success");
+            .all(|s| s["conclusion"] == "success");
         let tests_pending = !tests_passed
-            && check_suites["check_suites"]
-                .as_array()
-                .unwrap()
-                .iter()
-                .any(|s| s["status"] != "completed")
+            // && check_suites["check_suites"]
+            //     .as_array()
+            //     .unwrap()
+            //     .iter()
+            //     .any(|s| s["status"] != "completed")
             && check_runs["check_runs"]
                 .as_array()
                 .unwrap()
