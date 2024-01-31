@@ -29,6 +29,12 @@ async fn main() -> anyhow::Result<()> {
         prs.items
     };
 
+    println!(
+        "Collecting data for {} PRs... This may take a few seconds.",
+        prs.len()
+    );
+    println!();
+
     let mut md = MarkdownTable::new();
     md.set_titles(vec!["PR", "Author", "Mergeable", "Review state"]);
     for pr in prs {
