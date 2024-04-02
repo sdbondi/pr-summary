@@ -19,6 +19,9 @@ pub struct Cli {
     /// Load a specific PR. Mostly used for development purposes
     #[clap(long)]
     pub pr: Option<u64>,
+
+    #[clap(long)]
+    pub include_drafts: bool,
 }
 
 impl Cli {

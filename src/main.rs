@@ -38,9 +38,11 @@ async fn main() -> anyhow::Result<()> {
     let mut md = MarkdownTable::new();
     md.set_titles(vec!["PR", "Author", "Mergeable", "Review state"]);
     for pr in prs {
-        // Exclude draft PRs
-        if pr.draft.unwrap_or(true) {
-            continue;
+        if !cli.include_drafts {
+            // Exclude draft PRs
+            if pr.draft.unwrap_or(false) {
+                continue;
+            }
         }
 
         let age = (chrono::Utc::now() - pr.updated_at.unwrap())
@@ -135,9 +137,7 @@ async fn main() -> anyhow::Result<()> {
 
         let row = row![
             format!(
-                "[#{}]({}) {}",
-                pr.number,
-                pr.html_url.unwrap(),
+                "{} [{} #{}]({})",
                 if tests_passed {
                     "🟢"
                 } else if tests_pending {
@@ -145,6 +145,9 @@ async fn main() -> anyhow::Result<()> {
                 } else {
                     "🔴"
                 },
+                pr.title.as_deref().unwrap_or("Untitled"),
+                pr.number,
+                pr.html_url.unwrap(),
             ),
             pr.user.map(|u| u.login).unwrap_or_default(),
             pr.mergeable_state
