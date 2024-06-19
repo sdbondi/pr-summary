@@ -2,6 +2,10 @@
 name = "pr-summary"
 version = "0.1.0"
 edition = "2021"
+description = "Generates a markdown table that summarizes PRs"
+license = "WTFPL"
+author = ["sdbondi@users.noreply.github.com"]
+repository = "https://github.com/sdbondi/pr-summary"
 
 [dependencies]
 anyhow = "1.0.44"
